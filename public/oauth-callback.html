@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Authenticating with Google...</title>
+</head>
+<body style="background-color: #fafbf9; color: #1c1917; font-family: ui-sans-serif, system-ui, sans-serif;">
+  <div style="text-align: center; margin-top: 10%; padding: 2rem;">
+    <div style="margin-bottom: 1rem;">
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: inline-block; color: #1e293b;">
+        <circle cx="12" cy="12" r="10" stroke="#f59e0b" stroke-dasharray="62" stroke-dashoffset="0" stroke-linecap="round"></circle>
+        <path d="M12 6v6l4 2" stroke-linecap="round"></path>
+      </svg>
+    </div>
+    <h2 style="font-size: 1.5rem; font-weight: 800; margin-bottom: 0.5rem; letter-spacing: -0.025em;">Authorization Successful</h2>
+    <p style="font-size: 0.875rem; color: #57534e;">Connecting you to Theervu Maiyam. This window will close automatically.</p>
+  </div>
+  <script>
+    // Parse the hash fragment from the redirect URL
+    const hash = window.location.hash.substring(1);
+    const params = new URLSearchParams(hash);
+    const accessToken = params.get('access_token');
+    const error = params.get('error');
+
+    if (accessToken) {
+      if (window.opener) {
+        window.opener.postMessage({ type: 'GOOGLE_OAUTH_SUCCESS', accessToken: accessToken }, '*');
+        window.close();
+      } else {
+        // Fallback if not opened in popup
+        localStorage.setItem('google_access_token', accessToken);
+        window.location.href = '/';
+      }
+    } else if (error) {
+      if (window.opener) {
+        window.opener.postMessage({ type: 'GOOGLE_OAUTH_FAILURE', error: error }, '*');
+        window.close();
+      } else {
+        document.body.innerHTML = '<div style="text-align: center; margin-top: 10%; padding: 2rem;"><h3>Authentication Failed: ' + error + '</h3></div>';
+      }
+    } else {
+      document.body.innerHTML = '<div style="text-align: center; margin-top: 10%; padding: 2rem;"><h3>Error: No authorization details found.</h3></div>';
+    }
+  </script>
+</body>
+</html>
